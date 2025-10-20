@@ -9,7 +9,8 @@ echo Quelle: %Quelle%
 echo Ziel:   %Ziel%
 echo.
 
-robocopy %Quelle% %Ziel% 
+REM robocopy %Quelle% %Ziel% 
+robocopy "%Quelle%" "%Ziel%" /E 
 
 if %ERRORLEVEL% GEQ 8 (
     echo.
