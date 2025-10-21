@@ -16,7 +16,8 @@
 
 ; === GUI erstellen ===
 $hGUI = GUICreate("Batch Monitor", 600, 400)
-$Output = GUICtrlCreateEdit("", 10, 10, 580, 340, BitOR($ES_AUTOVSCROLL, $ES_READONLY, $WS_VSCROLL))
+; Edit-Feld für Ausgabe (mehrzeilig, readonly, mit Scrollbalken)
+$Output = GUICtrlCreateEdit("", 10, 10, 580, 340, BitOR($ES_AUTOVSCROLL, $ES_MULTILINE, $ES_READONLY, $WS_VSCROLL))
 $BtnStart = GUICtrlCreateButton("Batch starten", 10, 360, 150, 30)
 GUISetState(@SW_SHOW)
 
@@ -27,6 +28,7 @@ While True
         Case $GUI_EVENT_CLOSE
             Exit
         Case $BtnStart
+            GUICtrlSetData($Output, "") ; Ausgabe leeren
             StartBatch($Output)
     EndSwitch
 WEnd
@@ -35,6 +37,11 @@ WEnd
 Func StartBatch($hOutput)
     ; --- Hier Pfad zur Batchdatei ---
     Local $sBatch = @ScriptDir & "\copyWithMetaData.bat"
+
+    If Not FileExists($sBatch) Then
+        GUICtrlSetData($hOutput, "Fehler: Batchdatei nicht gefunden: " & $sBatch & @CRLF)
+        Return
+    EndIf
 
     ; --- Prozess starten (unsichtbar, mit Pipe) ---
     Local $iPID = Run(@ComSpec & " /c " & '"' & $sBatch & '"', "", @SW_HIDE, $STDOUT_CHILD)
@@ -52,5 +59,5 @@ Func StartBatch($hOutput)
     Local $sRemaining = StdoutRead($iPID)
     If $sRemaining <> "" Then GUICtrlSetData($hOutput, $sRemaining, 1)
 
-    GUICtrlSetData($hOutput, @CRLF & "=== Backup abgeschlossen ===" & @CRLF, 1)
+    GUICtrlSetData($hOutput, @CRLF & "=== Batch abgeschlossen ===" & @CRLF, 1)
 EndFunc
