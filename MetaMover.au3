@@ -5,22 +5,26 @@
 #include <GUIConstantsEx.au3>
 #include <StaticConstants.au3>
 #include <WindowsConstants.au3>
+#include <WindowsConstants.au3>
 #include <FileConstants.au3>
 #include <MsgBoxConstants.au3>
 #include <Process.au3>
+#include <WinAPISys.au3>
+#include <WinAPI.au3>
 
-#Region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("PicCopier (Admin)", 600, 200, -1, -1)
-$Input1 = GUICtrlCreateInput("", 100, 20, 400, 21)
-$Input2 = GUICtrlCreateInput("", 100, 60, 400, 21)
-$Label1 = GUICtrlCreateLabel("Quelle:", 30, 20, 60, 17)
-$Label2 = GUICtrlCreateLabel("Ziel:", 30, 60, 60, 17)
-$Button1 = GUICtrlCreateButton("Kopieren", 240, 100, 120, 30)
-$Button2 = GUICtrlCreateButton("...", 510, 20, 50, 25)
-$Button3 = GUICtrlCreateButton("...", 510, 60, 50, 25)
-$Output = GUICtrlCreateEdit("", 30, 140, 540, 40, BitOR($ES_READONLY, $WS_VSCROLL))
+#Region ### GUI ###
+$Form1 = GUICreate("PicCopier (Admin)", 650, 400)
+$Input1 = GUICtrlCreateInput("", 120, 20, 400, 21)
+$Input2 = GUICtrlCreateInput("", 120, 60, 400, 21)
+GUICtrlCreateLabel("Quelle:", 40, 20, 60, 17)
+GUICtrlCreateLabel("Ziel:", 40, 60, 60, 17)
+$Button1 = GUICtrlCreateButton("Kopieren", 260, 100, 120, 30)
+$Button2 = GUICtrlCreateButton("...", 530, 20, 50, 25)
+$Button3 = GUICtrlCreateButton("...", 530, 60, 50, 25)
+$Output = GUICtrlCreateEdit("", 30, 150, 590, 220, BitOR($ES_READONLY, $WS_VSCROLL, $ES_AUTOVSCROLL))
+GUICtrlSetFont($Output, 9, 400, 0, "Consolas")
 GUISetState(@SW_SHOW)
-#EndRegion ### END Koda GUI section ###
+#EndRegion ###
 
 While 1
     Switch GUIGetMsg()
@@ -50,22 +54,34 @@ While 1
                 ContinueLoop
             EndIf
 
-            ; --- Starte Batch und lese stdout live ---
             GUICtrlSetData($Output, "Starte Kopiervorgang..." & @CRLF)
 
+            ; --- Befehl vorbereiten ---
             Local $sCmd = @ComSpec & ' /c "' & _
                           '"' & $sBatch & '" "' & $sSource & '" "' & $sTarget & '" 2>&1"'
+
             Local $iPID = Run($sCmd, "", @SW_HIDE, $STDOUT_CHILD)
+            Local $hEdit = GUICtrlGetHandle($Output)
 
             While 1
                 Local $line = StdoutRead($iPID)
                 If @error Then ExitLoop
                 If $line <> "" Then
+                    ; Zeile anfügen
                     GUICtrlSetData($Output, $line, 1)
+                    ; Scrollen ans Ende
+                    _GUIScrollToBottom($hEdit)
                 EndIf
-                Sleep(50)
+                Sleep(30)
             WEnd
 
             GUICtrlSetData($Output, @CRLF & "✅ Kopiervorgang abgeschlossen.", 1)
+            _GUIScrollToBottom($hEdit)
     EndSwitch
 WEnd
+; Automatisches Scrollen
+Func _GUIScrollToBottom($hEdit)
+    Local Const $WM_VSCROLL = 0x115
+    Local Const $SB_BOTTOM = 7
+    DllCall("user32.dll", "lresult", "SendMessageW", "hwnd", $hEdit, "uint", $WM_VSCROLL, "wparam", $SB_BOTTOM, "lparam", 0)
+EndFunc
