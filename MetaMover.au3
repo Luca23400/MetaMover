@@ -8,7 +8,7 @@
 #include <MsgBoxConstants.au3>
 
 #Region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("Form1", 577, 139, 2944, 312)
+$Form1 = GUICreate("Form1", 577, 139, 244, 312)
 $Button1 = GUICtrlCreateButton("Kopieren", 208, 96, 129, 25)
 $Input1 = GUICtrlCreateInput("", 104, 8, 377, 21)
 $Input2 = GUICtrlCreateInput("", 104, 48, 377, 21)
